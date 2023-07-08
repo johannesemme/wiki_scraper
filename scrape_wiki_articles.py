@@ -3,8 +3,9 @@ from tqdm import tqdm
 import time
 from bs4 import BeautifulSoup
 import requests
-import pandas as pd
+import os
 import argparse
+import shutil
 
 def get_title_and_text(url):
     response = requests.get(url)
@@ -15,6 +16,8 @@ def get_title_and_text(url):
         tbody.decompose()
     for div in text.findAll('div',attrs={'class':"thumbcaption"}): # remove all captions for images
         div.decompose()    
+    for dd in text.findAll('dd'):
+        dd.decompose()
     text = text.prettify()
     return title.strip(), text.strip()
 
@@ -38,27 +41,43 @@ def main(depth):
     with open(f"data/urls_depth_{depth}.json", "r") as f:
         dict_urls = dict(json.load(f))
 
-    # store title, text, category and url in a dataframe
-    titles = []
-    texts = []
-    categories = []
-    urls = []
+    # check if folder "wiki_depth_{depth}" exists. If not, create it, else prompt user whether to overwrite
+    if os.path.exists(f"data/wiki_depth_{depth}"):
+        overwrite = input("Folder already exists. Do you want to overwrite? (y/n/continue): ")
+        if overwrite == "y":
+            shutil.rmtree(f"data/wiki_depth_{depth}") # delete folder and all subfolders
+            os.mkdir(f"data/wiki_depth_{depth}")
+        elif overwrite == "continue":
+            pass
+        else:
+            print("Exiting...")
+            return None
+    else:
+        os.mkdir(f"data/wiki_depth_{depth}")
+
+    # create subfolders for each category
+    for category in dict_urls.keys():
+        os.mkdir(f"data/wiki_depth_{depth}/{category}")
+
+    # store title, text, category and url in each a txt file for each article
     for category in tqdm(dict_urls.keys(), total=len(dict_urls.keys()), desc="Categories"):
         print(f"Collecting data for category: {category}")
-        urls_for_category = dict_urls[category][:5]
+        urls_for_category = dict_urls[category]
         for url in tqdm(urls_for_category, total=len(urls_for_category), desc="Urls"):
             title, text = get_raw_data(url)
             if title and text:
-                titles.append(title)
-                texts.append(text)
-                categories.append(category)
-                urls.append(url)
+                try:
+                    save_title = title.replace("/", "_") # replace / with _ in title
+                    with open(f"data/wiki_depth_{depth}/{category}/{save_title}.txt", "a") as f:
+                        # store title, text, category and url in txt file on same line
+                        f.write(title + "\t" + url + "\t" + category + "\t" + text + "\n")
+                except:
+                    print(f"Failed for url: {url}. Name of file is not valid")
             else:
                 print(f"Failed for url: {url}. Not enough data is collected.")
-    # save data
-    data = pd.DataFrame({"title": titles, "text": texts, "category": categories, "url": urls})
-    data.to_csv(f"data/wiki_data_depth_{depth}.csv", index=False, sep=";")
-
+                # store urls that failed
+                with open(f"data/failed_urls_depth_{depth}.txt", "a") as f:
+                    f.write(url + "\n")
 
 if __name__ == "__main__":
 

@@ -17,7 +17,7 @@ h.ignore_images = True
 h.ignore_tables = True
 h.body_width = 0
 h.unicode_snob = True
-h.skip_internal_links = True
+h.single_line_break = True
 
 def clean_html(raw_text: str):
     """ 
@@ -30,6 +30,9 @@ def clean_html(raw_text: str):
         str: Cleaned text
     """
     t = h.handle(raw_text) # convert html to text
+    res = re.findall(r'\"(.+?)\"', t) # find all text inside quotes
+    for r in res: # remove unnescessary spaces inside quotes like: " text " --> "text"
+        t = t.replace(r, f"{r.strip()}")
     t = re.sub(" +", " ",t).strip() # remove trailing spaces
     t = re.sub(r' ([.,;:?!)}\]])', r'\1', t) # remove spaces before punctuations and brackets
     t = t.replace("*", "").strip() # remove bullet points
@@ -56,6 +59,8 @@ def clean_html(raw_text: str):
     t = t.replace("\xad", "") # remove soft hyphens (https://en.wikipedia.org/wiki/Soft_hyphen
     t = t.replace("\xa0", " ") # replace non-breaking space (https://en.wikipedia.org/wiki/Non-breaking_space)
     t = t.replace("\u200b", "") # remove zero width space (https://en.wikipedia.org/wiki/Zero-width_space)
+    t = t.replace("\\", "")
+    #t = re.sub(" +", " ",t).strip() # remove trailing spaces
     return t.strip()
 
 def push_data_to_s3(
@@ -111,9 +116,25 @@ def push_data_to_s3(
 def main(depth: int):
     """ Main function for processing and storing wiki data  """
 
-    # load wiki data pandas
-    data = pd.read_csv(f"data/wiki_data_depth_{depth}.csv", sep=";")
-    print(data.head())
+    # inside wiki_{depth} there are subfolders with categories. Each of these have a bunch of txt files
+    # load all txt files into a pandas dataframe
+    
+    titles = []
+    texts = []
+    categories = []
+    urls = []
+    for category in tqdm(os.listdir(f"data/wiki_{depth}"), desc="Loading data"):
+        if category == "Uddannelse":
+            for file in os.listdir(f"data/wiki_{depth}/{category}"):
+                with open(f"data/wiki_{depth}/{category}/{file}", "r") as f:
+                    text_file = f.read()
+                # get title, text, category and url from text_file (stored using .write(title + "\t" + url + "\t" + category + "\t" + text + "\n"))
+                titles.append(text_file.split("\t")[0])
+                urls.append(text_file.split("\t")[1])
+                categories.append(text_file.split("\t")[2])
+                texts.append(text_file.split("\t")[3])
+    data = pd.DataFrame({"title": titles, "text": texts, "category": categories, "url": urls})
+
 
     # clean text using multiprocessing
     with Pool(8) as p:
@@ -124,7 +145,7 @@ def main(depth: int):
 
     # store cleaned data in csv
     data.to_csv(f"data/wiki_data_depth_{depth}_cleaned.csv", sep=";", index=False)
-    
+    print(data.head())
     # store data on s3 aws
     push_data_to_s3(
         input_files=[f"wiki_data_depth_{depth}_cleaned.csv"],

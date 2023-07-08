@@ -35,12 +35,9 @@ clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
-	
-setup: conda_env install kernel
 
-## Run all tests
-PARAMS = --depth 2 # default 2 - can be changed: make data_pipe PARAMS="--depth 2"
-data_pipe:
-	python collect_wiki_urls.py ${PARAMS}
-	python scrape_wiki_articles.py ${PARAMS}
-	python process_and_store.py ${PARAMS}
+folders:
+	mkdir data
+
+setup: conda_env install kernel folders
+

@@ -63,17 +63,24 @@ I dette script indhentes først url'erme for hver af de tolv hovedkategorier. Ek
 
 ## Scrape wikipedia artikler
 
-Fra scrapy-projekt mappen "wikipedia"
+Fra scrapy-projekt mappen "wikipedia" kør:
 
 ```bash
 scrapy crawl wiki -a depth=3
 ```
-## Rense artikel-data og upload til cloud storage (S3)
+## Rense artikel-data (html->text)
 
-Sørg for at have aws api installeret.
-+ have lavet S3 bucket...
+For at "rense" html'en og kun få den ønskede tekst ud køres følgende sript:
 
 ```bash
-python process_and_store.py --depth 3
+python process.py --depth 3
+```
+
+## Upload data til s3
+
+Til sidst uploades data til S3 bucket:
+
+```bash
+python push_to_cloud.py
 ```
 

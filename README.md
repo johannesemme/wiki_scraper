@@ -38,6 +38,17 @@ ERHVERVSLIV
 2. Det kan hurtigt blive komplekst og ressource-krævende at arbejde med XLM-dump pga. den store datastørrelse
 3. Ved eget scrape kan vi sikre nyeste data
 
+## Setup
+
+Kør følgende kommando for at:
+- lave conda miljø
+- installere requirements
+- installere ipykernel (for at arbejde med jupyter notebooks)
+- lave data folder
+
+```bash
+make setup
+```
 
 ## Indhent url'er
 
@@ -57,5 +68,12 @@ Fra scrapy-projekt mappen "wikipedia"
 ```bash
 scrapy crawl wiki -a depth=3
 ```
+## Rense artikel-data og upload til cloud storage (S3)
 
+Sørg for at have aws api installeret.
++ have lavet S3 bucket...
+
+```bash
+python process_and_store.py --depth 3
+```
 

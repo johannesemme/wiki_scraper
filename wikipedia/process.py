@@ -4,9 +4,6 @@ from multiprocessing import Pool
 from tqdm import tqdm
 import pandas as pd
 import argparse
-import boto3
-from dotenv import load_dotenv
-from botocore.session import Session
 import os
 
 # https://github.com/Alir3z4/html2text/blob/master/docs/usage.md
@@ -63,54 +60,20 @@ def clean_html(raw_text: str):
     #t = re.sub(" +", " ",t).strip() # remove trailing spaces
     return t.strip()
 
-def push_data_to_s3(
-    input_files: list,
-    bucket_name: str,
-    local_folder: str = "data/processed",
-    s3_folder: str = "model-job-category",
-):
-    # Create a Boto3 session
-    session = Session()
-
-    # Load AWS credentials from the .aws file
-    session_credentials = session.get_credentials()
-
-    # Access the access key ID and secret access key
-    aws_access_key_id = session_credentials.access_key
-    aws_secret_access_key = session_credentials.secret_key
-
-    # Create an S3 client
-    s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
-
-
-
-    # check if files exist on s3 - if so, ask if user wants to overwrite
-    try:
-        for file in input_files:
-            file_path = f"{local_folder}/{file}" # local file path
-            object_key = f"{s3_folder}/{file}" # s3 file path
-            try:
-                s3.head_object(Bucket=bucket_name, Key=object_key)
-                overwrite = input(f"File '{file}' already exists on s3. Do you want to overwrite the file? (y/n): ")
-                try:
-                    assert overwrite.lower() == "y"
-                    pass
-                except:
-                    print("Exiting...")
-                    return
-            except:
-                pass
-    except:
-        print(f"Failed to upload file '{file}' to s3")
-        pass
-        
-
-    # Upload files
-    for file in input_files:
-        file_path = f"{local_folder}/{file}" # local file path
-        object_key = f"{s3_folder}/{file}" # s3 file path
-        s3.upload_file(file_path, bucket_name, object_key) 
-
+def clean_title(raw_title: str):
+    """ 
+    Cleans text for html tags 
+    
+    Args:
+        raw_title (str): Raw title with html tags
+    
+    Returns:
+        str: Cleaned title
+    """
+    t = h.handle(raw_title) 
+    t = t.replace("_", " ") 
+    t = re.sub(" +", " ",t).strip() # remove trailing spaces
+    return t.strip()
 
 
 def main(depth: int):
@@ -118,43 +81,48 @@ def main(depth: int):
 
     # inside wiki_{depth} there are subfolders with categories. Each of these have a bunch of txt files
     # load all txt files into a pandas dataframe
+
+    data_path = f"../data/wiki_depth_{depth}"
     
     titles = []
     texts = []
     categories = []
     urls = []
-    for category in tqdm(os.listdir(f"data/wiki_{depth}"), desc="Loading data"):
-        if category == "Uddannelse":
-            for file in os.listdir(f"data/wiki_{depth}/{category}"):
-                with open(f"data/wiki_{depth}/{category}/{file}", "r") as f:
-                    text_file = f.read()
-                # get title, text, category and url from text_file (stored using .write(title + "\t" + url + "\t" + category + "\t" + text + "\n"))
-                titles.append(text_file.split("\t")[0])
-                urls.append(text_file.split("\t")[1])
-                categories.append(text_file.split("\t")[2])
-                texts.append(text_file.split("\t")[3])
+    for category in tqdm(os.listdir(data_path), desc="Loading data"):
+        for file in os.listdir(f"{data_path}/{category}"):
+            with open(f"{data_path}/{category}/{file}", "r") as f:
+                text_file = f.read()
+            # get title, text, category and url from text_file (stored using .write(title + "\t" + url + "\t" + category + "\t" + text + "\n"))
+            titles.append(text_file.split("\t")[0])
+            urls.append(text_file.split("\t")[1])
+            categories.append(text_file.split("\t")[2])
+            texts.append(text_file.split("\t")[3])
     data = pd.DataFrame({"title": titles, "text": texts, "category": categories, "url": urls})
 
 
     # clean text using multiprocessing
     with Pool(8) as p:
         cleaned_text = list(tqdm(p.imap(clean_html, data["text"]), total=len(data["text"]), desc="Cleaning text"))
+    # clean title using multiprocessing
+    with Pool(8) as p:
+        cleaned_title = list(tqdm(p.imap(clean_title, data["title"]), total=len(data["title"]), desc="Cleaning title"))
 
     # store cleaned text in pandas
     data["text"] = cleaned_text
+    data["title"] = cleaned_title
 
     # store cleaned data in csv
-    data.to_csv(f"data/wiki_data_depth_{depth}_cleaned.csv", sep=";", index=False)
+    data.to_csv(f"../data/wikidata_depth_{depth}_cleaned.csv", sep=";", index=False)
     print(data.head())
     # store data on s3 aws
-    push_data_to_s3(
+    """push_data_to_s3(
         input_files=[f"wiki_data_depth_{depth}_cleaned.csv"],
         bucket_name="joej-wikipedia",
         local_folder="data",
         s3_folder="scraped-data",
     )
 
-
+"""
 
 
 

@@ -17,20 +17,22 @@ Systemet er hierarkisk opbygget i en lidt "kringlet" træ-struktur. Kategorier s
 
 Kategorisystemet muliggør, at man kan indhente de Wikipedia-artikler, der hører ind under specifikke kategorier. Oplagt er det at indhente artikler, der hører ind under hver topniveau-kategori. For dette projekt (repo) er følgende tolv "hovedkategorier" udvalgt:
 
-UDANNELSE
-SAMFUND
-VIDENSKAB
-NATUR (KLIMA & MILJØ)
-TEKNOLOGI
-KULTUR (MUSIK, TEATER, KUNST)
-HISTORIE
-SUNDHED
-GEOGRAFI
-ØKONOMI
-SPORT
-RELIGION
-POLITIK
-ERHVERVSLIV
+- UDANNELSE
+- SAMFUND
+- VIDENSKAB
+- NATUR (KLIMA & MILJØ)
+- TEKNOLOGI
+- KULTUR (MUSIK, TEATER, KUNST)
+- HISTORIE
+- SUNDHED
+- GEOGRAFI
+- ØKONOMI
+- SPORT
+- RELIGION
+- POLITIK
+- #Underholdning
+- #Liv
+
 
 ### Hvorfor ikke bruge wikipedia XLM dump, DB pedia eller Wikipedia API?
 

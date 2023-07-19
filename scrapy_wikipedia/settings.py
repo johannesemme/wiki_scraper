@@ -1,4 +1,4 @@
-# Scrapy settings for wikipedia project
+# Scrapy settings for scrapy_wikipedia project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,14 +7,14 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "wikipedia"
+BOT_NAME = "scrapy_wikipedia"
 
-SPIDER_MODULES = ["wikipedia.spiders"]
-NEWSPIDER_MODULE = "wikipedia.spiders"
+SPIDER_MODULES = ["scrapy_wikipedia.spiders"]
+NEWSPIDER_MODULE = "scrapy_wikipedia.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "wikipedia (+http://www.yourdomain.com)"
+#USER_AGENT = "scrapy_wikipedia (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -45,13 +45,13 @@ CONCURRENT_REQUESTS_PER_IP = 16
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    "wikipedia.middlewares.WikipediaSpiderMiddleware": 543,
+#    "scrapy_wikipedia.middlewares.ScrapyWikipediaSpiderMiddleware": 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    "wikipedia.middlewares.WikipediaDownloaderMiddleware": 543,
+#    "scrapy_wikipedia.middlewares.ScrapyWikipediaDownloaderMiddleware": 543,
 #}
 
 # Enable or disable extensions
@@ -63,12 +63,12 @@ CONCURRENT_REQUESTS_PER_IP = 16
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 #ITEM_PIPELINES = {
-#    "wikipedia.pipelines.WikipediaPipeline": 300,
+#    "scrapy_wikipedia.pipelines.ScrapyWikipediaPipeline": 300,
 #}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-AUTOTHROTTLE_ENABLED = True
+#AUTOTHROTTLE_ENABLED = True
 # The initial download delay
 #AUTOTHROTTLE_START_DELAY = 5
 # The maximum download delay to be set in case of high latencies
@@ -92,10 +92,5 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-ITEM_PIPELINES = {
-    'wikipedia.pipelines.FailurePipeline': 400,
-    # Add other pipelines if needed
-}
-
-LOG_LEVEL = 'INFO'
-LOG_FILE = 'scrapy.log'
+# set debug level
+LOG_LEVEL = "INFO"

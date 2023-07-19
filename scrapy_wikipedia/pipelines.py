@@ -6,13 +6,12 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+import logging
 
 
-class WikipediaPipeline:
+class ScrapyWikipediaPipeline:
     def process_item(self, item, spider):
         return item
-
-import logging
 
 class FailurePipeline:
     def __init__(self):

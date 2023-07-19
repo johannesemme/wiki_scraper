@@ -4,7 +4,7 @@ Indhent en række wikipedia-artikler for forskellige udvalgte wikipedia-kategori
 
 Denne data kan efterfølgende bruges til bl.a. 
 - at træne en kategori-model, som kan kategorisere en tekst mht. de udvalgte kategorier.
-- at lave egen søgbar database
+- at lave egen søgbar minidatabase
 - at træne mini language model
 
 ## Indhent wikipediaartikler og deres kategorier
@@ -17,21 +17,22 @@ Systemet er hierarkisk opbygget i en lidt "kringlet" træ-struktur. Kategorier s
 
 Kategorisystemet muliggør, at man kan indhente de Wikipedia-artikler, der hører ind under specifikke kategorier. Oplagt er det at indhente artikler, der hører ind under hver topniveau-kategori. For dette projekt (repo) er følgende tolv "hovedkategorier" udvalgt:
 
-- UDANNELSE
-- SAMFUND
-- VIDENSKAB
-- NATUR (KLIMA & MILJØ)
-- TEKNOLOGI
-- KULTUR (MUSIK, TEATER, KUNST)
-- HISTORIE
-- SUNDHED
-- GEOGRAFI
-- ØKONOMI
-- SPORT
-- RELIGION
-- POLITIK
-- #Underholdning
-- #Liv
+1. UDANNELSE
+2. SAMFUND
+3. VIDENSKAB
+4. NATUR (KLIMA & MILJØ)
+5. TEKNOLOGI
+6. KULTUR (MUSIK, TEATER, KUNST)
+7. HISTORIE
+8. SUNDHED
+9. GEOGRAFI
+10. BIOLOGI
+11. ØKONOMI
+12. SPORT
+13. RELIGION
+14. POLITIK
+15. UNDERHOLDNING
+
 
 
 ### Hvorfor ikke bruge wikipedia XLM dump, DB pedia eller Wikipedia API?
@@ -42,11 +43,19 @@ Kategorisystemet muliggør, at man kan indhente de Wikipedia-artikler, der høre
 
 ## Setup
 
+Lav conda miljø og aktivér det
+
+```bash
+make conda_env
+```
+
+```bash
+conda activate wiki_scraper
+```
 Kør følgende kommando for at:
-- lave conda miljø
-- installere requirements
-- installere ipykernel (for at arbejde med jupyter notebooks)
-- lave data folder
+- Installere requirements
+- Installere ipykernel (for at arbejde med jupyter notebooks)
+- Oprette data folder
 
 ```bash
 make setup
@@ -54,10 +63,10 @@ make setup
 
 ## Indhent url'er
 
-Navigér til wikipedia scrapy projekt-mappen (cd Wikipedia). Vælg den dybde du vil bruge. Default: 3.
+Vælg den dybde du vil bruge. Default is 3 for all scripts.
 
 ```bash
-python collect_wiki_urls.py --depth 3
+python collect_wiki_urls.py --depth 1
 ```
 
 I dette script indhentes først url'erme for hver af de tolv hovedkategorier. Eksempel: For Uddannelse: "https://da.wikipedia.org/wiki/Kategori:Uddannelse", gemmes url'er først for de tilhørende Wikipedia-artikler (fx er det bl.a. artikler såsom Almendannelse, Elev, og Studiekort). Efterfølgende forfølges hvert link til underkategori-siderne, hvor de tilsvarende artiklers url'er ligeledes gemmes osv. 
@@ -68,14 +77,14 @@ I dette script indhentes først url'erme for hver af de tolv hovedkategorier. Ek
 Fra scrapy-projekt mappen "wikipedia" kør:
 
 ```bash
-scrapy crawl wiki -a depth=3
+scrapy crawl wiki -a depth=1
 ```
 ## Rense artikel-data (html->text)
 
 For at "rense" html'en og kun få den ønskede tekst ud køres følgende sript:
 
 ```bash
-python process.py --depth 3
+python process.py --depth 1
 ```
 
 ## Upload data til s3
@@ -83,6 +92,6 @@ python process.py --depth 3
 Til sidst uploades data til S3 bucket:
 
 ```bash
-python push_to_cloud.py
+python push_to_cloud.py --input_file 'wiki_depth_1.parquet' --bucket_name hanse-scrape-data --s3_folder wikipedia-categories
 ```
 

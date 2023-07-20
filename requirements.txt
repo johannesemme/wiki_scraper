@@ -6,3 +6,8 @@ numpy
 pandas
 python-dotenv
 boto3
+scrapy
+html2text
+parquet
+pyarrow
+fastparquet

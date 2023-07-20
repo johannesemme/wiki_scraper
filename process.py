@@ -82,7 +82,7 @@ def main(depth: int):
     # inside wiki_{depth} there are subfolders with categories. Each of these have a bunch of txt files
     # load all txt files into a pandas dataframe
 
-    data_path = f"../data/wiki_depth_{depth}"
+    data_path = f"data/wiki_depth_{depth}"
     
     titles = []
     texts = []
@@ -90,13 +90,17 @@ def main(depth: int):
     urls = []
     for category in tqdm(os.listdir(data_path), desc="Loading data"):
         for file in os.listdir(f"{data_path}/{category}"):
-            with open(f"{data_path}/{category}/{file}", "r") as f:
+            with open(f"{data_path}/{category}/{file}", "r", encoding="utf-8") as f:
                 text_file = f.read()
             # get title, text, category and url from text_file (stored using .write(title + "\t" + url + "\t" + category + "\t" + text + "\n"))
-            titles.append(text_file.split("\t")[0])
-            urls.append(text_file.split("\t")[1])
-            categories.append(text_file.split("\t")[2])
-            texts.append(text_file.split("\t")[3])
+            try:
+                titles.append(text_file.split("\t")[0])
+                urls.append(text_file.split("\t")[1])
+                categories.append(text_file.split("\t")[2])
+                texts.append(text_file.split("\t")[3])
+            except:
+                print(f"Error in file {file} in category {category}")
+
     data = pd.DataFrame({"title": titles, "text": texts, "category": categories, "url": urls})
 
 
@@ -110,35 +114,17 @@ def main(depth: int):
     # store cleaned text in pandas
     data["text"] = cleaned_text
     data["title"] = cleaned_title
-
-    # store cleaned data in csv
-    data.to_csv(f"../data/wikidata_depth_{depth}_cleaned.csv", sep=";", index=False)
     print(data.head())
-    # store data on s3 aws
-    """push_data_to_s3(
-        input_files=[f"wiki_data_depth_{depth}_cleaned.csv"],
-        bucket_name="joej-wikipedia",
-        local_folder="data",
-        s3_folder="scraped-data",
-    )
 
-"""
-
-
+    # store cleaned data in parquet format
+    data.to_parquet(f"data/wiki_depth_{depth}.parquet")
 
 if __name__ == "__main__":
-
-    # Test funktion
-    #title, text  = get_raw_data('https://da.wikipedia.org/wiki/Beatles')
-    #print(title, text[:100])
-
 
     # get depth argument
     parser = argparse.ArgumentParser()
     parser.add_argument("--depth", help="depth of scraping", type=int)
     args = parser.parse_args()
-    depth = args.depth if args.depth else None
-    if not depth:
-        raise ValueError("Please specify depth of scraping")
+    depth = args.depth if args.depth else 3
 
     main(depth)

@@ -36,7 +36,7 @@ def get_urls(url, type_):
                 data = soup.findAll('div',attrs={'id':'mw-' + type_})
                 for tag in data[0].find_all("a"):
                     page_name = tag.attrs["href"]
-                    if not "Bruger:" in page_name and not "Portal:" in page_name:
+                    if not "Bruger:" in page_name and not "Portal:" in page_name and not "Skabelon" in page_name:
                         url_list.append(main_url + page_name)
                 return url_list
             except:
@@ -72,7 +72,7 @@ def main(url_list, url_dict, depth):
 
     print("Total number of urls:", sum([len(url_dict[cat]) for cat in categories]))
 
-    with open(f"../data/urls_depth_{depth}.json", "w") as f:
+    with open(f"data/urls_depth_{depth}.json", "w") as f:
         json.dump(url_dict, f, indent=4)
 
 
@@ -83,9 +83,7 @@ if __name__ == "__main__":
     parser.add_argument("--depth", help="depth of scraping", type=int)
     args = parser.parse_args()
     depth = args.depth if args.depth else 3
-    if not depth:
-        raise ValueError("Please specify depth of scraping")
-
+    
     url_list = [
         "https://da.wikipedia.org/wiki/Kategori:Uddannelse",
         "https://da.wikipedia.org/wiki/Kategori:Samfund",
@@ -96,16 +94,18 @@ if __name__ == "__main__":
         "https://da.wikipedia.org/wiki/Kategori:Historie",
         "https://da.wikipedia.org/wiki/Kategori:Sundhed",
         "https://da.wikipedia.org/wiki/Kategori:Geografi",
+        "https://da.wikipedia.org/wiki/Kategori:Biologi",
         "https://da.wikipedia.org/wiki/Kategori:%C3%98konomi",
         "https://da.wikipedia.org/wiki/Kategori:Sport",
         "https://da.wikipedia.org/wiki/Kategori:Religion",
         "https://da.wikipedia.org/wiki/Kategori:Politik",
-        "https://da.wikipedia.org/wiki/Kategori:Erhvervsliv"
+        "https://da.wikipedia.org/wiki/Kategori:Underholdning",
     ]
         
-
+    
     # Dictionary 
-    url_dict = {"Uddannelse" : [],
+    url_dict = {
+        "Uddannelse" : [],
         "Samfund": [],
         "Videnskab": [],
         "Natur": [],
@@ -114,10 +114,12 @@ if __name__ == "__main__":
         "Historie": [],
         "Sundhed": [],
         "Geografi": [],
+        "Biologi": [],
         "Økonomi": [],
         "Sport": [],
         "Religion": [],
         "Politik": [],
-        "Erhvervsliv": []}
+        "Underholdning": [],
+    }
     
     main(url_list, url_dict, depth)

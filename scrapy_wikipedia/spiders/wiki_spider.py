@@ -6,6 +6,7 @@ import json
 import os
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+import re
 import logging
 
 logger = logging.getLogger('wiki_scraper')
@@ -14,22 +15,25 @@ class MySpider(scrapy.Spider):
     name = 'wiki'
     allowed_domains = ['https://da.wikipedia.org/wiki/']  # Replace with your target domain(s)
 
-    def __init__(self, depth=1, *args, **kwargs):
+    def __init__(self, depth=3, *args, **kwargs):
         super(MySpider, self).__init__(*args, **kwargs)
 
         # get args from command line
         self.depth = int(depth)
 
         # load data
-        with open(f"../data/urls_depth_{self.depth}.json", "r") as f:
-            data = dict(json.load(f))
+        try:
+            with open(f"data/urls_depth_{self.depth}.json", "r") as f:
+                data = dict(json.load(f))
+        except:
+            raise ValueError(f"Could not find data/urls_depth_{self.depth}.json. Please run collect_wiki_urls.py with the same depth argument first")
 
         # make folder: wiki_depth_{depth} and subfolders for each category
-        if not os.path.exists(f"../data/wiki_depth_{self.depth }"):
-            os.mkdir(f"../data/wiki_depth_{self.depth }")
+        if not os.path.exists(f"data/wiki_depth_{self.depth }"):
+            os.mkdir(f"data/wiki_depth_{self.depth }")
         for category in data.keys():
-            if not os.path.exists(f"../data/wiki_depth_{self.depth }/{category}"):
-                os.mkdir(f"../data/wiki_depth_{self.depth }/{category}")
+            if not os.path.exists(f"data/wiki_depth_{self.depth }/{category}"):
+                os.mkdir(f"data/wiki_depth_{self.depth }/{category}")
         self.data = data
 
     def start_requests(self):
@@ -60,13 +64,24 @@ class MySpider(scrapy.Spider):
         html = response.text if response.text else None
 
         # get title
+        title = None
         try:
-            title = response.css(".mw-page-title-main::text").get().replace('/', '_')
+            title = response.css(".mw-page-title-main::text").get()
+            save_title = title.replace('/', '_')
         except:
-            title = None
+            # try to get title from the first h1 (id = firstHeading)
+            try:
+                title = response.xpath('//h1//text()').get()
+                save_title = title.replace('/', '_')
+            except:
+                title = None
+
         if not title:
             title = url.split('https://da.wikipedia.org/wiki/')[-1].replace('/', '_')
+            save_title = title.replace('/', '_')
+            logger.info(f"Could not get title for url: {url}. Using {title} derived from url")
 
+        #%%
         # remove all tbody (table text), image captions and dd tags (references)
         text = None
         try:
@@ -81,10 +96,11 @@ class MySpider(scrapy.Spider):
             text = text.prettify()
         except:
             logger.info("Error in parsing html")
-        
-        # save data
+
         try:
-            with open(f"../data/wiki_depth_{self.depth}/{category}/{title}.txt", "w") as f:
+            # remove all non-alphanumeric characters from save_title
+            save_title = re.sub(r'\W+', '', save_title)
+            with open(f"data/wiki_depth_{self.depth}/{category}/{save_title}.txt", "w", encoding="utf-8") as f:
                 # save title, text, category and url in txt file on same line
                 f.write(title + "\t" + url + "\t" + category + "\t" + text + "\n")
         except:

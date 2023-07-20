@@ -23,9 +23,11 @@ ifeq (True,$(HAS_CONDA))
 	conda create --name $(PROJECT_NAME) python=$(PYTHON_VERSION) 
 endif
 
-install:
-	pip install --upgrade pip &&\
-		pip install -r requirements.txt
+upgrade_pip:
+	python -m pip install --upgrade pip
+
+install_requirements:
+	pip install -r requirements.txt
 
 kernel:
 	python -m ipykernel install --user --name=$(PROJECT_NAME)
@@ -39,5 +41,5 @@ clean:
 folders:
 	mkdir data
 
-setup: conda_env install kernel folders
+setup: upgrade_pip install_requirements kernel folders
 

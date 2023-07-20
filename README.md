@@ -79,18 +79,11 @@ Fra scrapy-projekt mappen "wikipedia" kør:
 ```bash
 scrapy crawl wiki -a depth=1
 ```
-## Rense artikel-data (html->text)
-
-For at "rense" html'en og kun få den ønskede tekst ud køres følgende sript:
-
-```bash
-python process.py --depth 1
-```
 
 ## Upload data til s3
 
 Til sidst uploades data til S3 bucket:
 
 ```bash
-python push_to_cloud.py --input_file 'wiki_depth_1.parquet' --bucket_name hanse-scrape-data --s3_folder wikipedia-categories
+python push_to_cloud.py --depth 1 --bucket_name hanse-scrape-data --s3_folder wikipedia-categories
 ```

@@ -7,6 +7,7 @@ import os
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 import re
+import re
 import logging
 
 logger = logging.getLogger('wiki_scraper')
@@ -15,6 +16,7 @@ class MySpider(scrapy.Spider):
     name = 'wiki'
     allowed_domains = ['https://da.wikipedia.org/wiki/']  # Replace with your target domain(s)
 
+    def __init__(self, depth=3, *args, **kwargs):
     def __init__(self, depth=3, *args, **kwargs):
         super(MySpider, self).__init__(*args, **kwargs)
 
@@ -27,11 +29,20 @@ class MySpider(scrapy.Spider):
                 data = dict(json.load(f))
         except:
             raise ValueError(f"Could not find data/urls_depth_{self.depth}.json. Please run collect_wiki_urls.py with the same depth argument first")
+        try:
+            with open(f"data/urls_depth_{self.depth}.json", "r") as f:
+                data = dict(json.load(f))
+        except:
+            raise ValueError(f"Could not find data/urls_depth_{self.depth}.json. Please run collect_wiki_urls.py with the same depth argument first")
 
         # make folder: wiki_depth_{depth} and subfolders for each category
         if not os.path.exists(f"data/wiki_depth_{self.depth }"):
             os.mkdir(f"data/wiki_depth_{self.depth }")
+        if not os.path.exists(f"data/wiki_depth_{self.depth }"):
+            os.mkdir(f"data/wiki_depth_{self.depth }")
         for category in data.keys():
+            if not os.path.exists(f"data/wiki_depth_{self.depth }/{category}"):
+                os.mkdir(f"data/wiki_depth_{self.depth }/{category}")
             if not os.path.exists(f"data/wiki_depth_{self.depth }/{category}"):
                 os.mkdir(f"data/wiki_depth_{self.depth }/{category}")
         self.data = data

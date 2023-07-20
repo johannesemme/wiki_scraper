@@ -83,6 +83,7 @@ def main(depth: int):
     # load all txt files into a pandas dataframe
 
     data_path = f"data/wiki_depth_{depth}"
+    data_path = f"data/wiki_depth_{depth}"
     
     titles = []
     texts = []
@@ -90,6 +91,7 @@ def main(depth: int):
     urls = []
     for category in tqdm(os.listdir(data_path), desc="Loading data"):
         for file in os.listdir(f"{data_path}/{category}"):
+            with open(f"{data_path}/{category}/{file}", "r", encoding="utf-8") as f:
             with open(f"{data_path}/{category}/{file}", "r", encoding="utf-8") as f:
                 text_file = f.read()
             # get title, text, category and url from text_file (stored using .write(title + "\t" + url + "\t" + category + "\t" + text + "\n"))

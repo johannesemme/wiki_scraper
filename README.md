@@ -94,5 +94,3 @@ Til sidst uploades data til S3 bucket:
 ```bash
 python push_to_cloud.py --input_file 'wiki_depth_1.parquet' --bucket_name hanse-scrape-data --s3_folder wikipedia-categories
 ```
-
-python push_to_cloud.py --input_file 'wiki_depth_2.parquet' --bucket_name hanse-scrape-data --s3_folder wikipedia-categories

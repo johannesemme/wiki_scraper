@@ -2,7 +2,7 @@
 
 Indhent en række wikipedia-artikler for forskellige udvalgte wikipedia-kategorier. Herefter dumpe data i S3.
 
-Denne data kan efterfølgende bruges til bl.a. 
+Denne data kan efterfølgende bruges til fx: 
 - at træne en kategori-model, som kan kategorisere en tekst mht. de udvalgte kategorier.
 - at lave egen søgbar minidatabase
 - at træne mini language model

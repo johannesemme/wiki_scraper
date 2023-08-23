@@ -43,10 +43,6 @@ def store_data_in_parquet(depth: int):
     data = pd.DataFrame({"title": titles, "text": texts, "category": categories, "url": urls})
     data.to_parquet(f"data/wiki_depth_{depth}.parquet")
 
-
-        
-
-
 def push_data_to_s3(
     input_file: str,
     bucket_name: str,

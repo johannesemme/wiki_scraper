@@ -1,7 +1,5 @@
 import scrapy
-from scrapy.pipelines.files import FilesPipeline
 from scrapy import Request
-#from my_scraper.items import MyItem
 import json
 import os
 from bs4 import BeautifulSoup
@@ -17,7 +15,6 @@ class MySpider(scrapy.Spider):
     allowed_domains = ['https://da.wikipedia.org/wiki/']  # Replace with your target domain(s)
 
     def __init__(self, depth=3, *args, **kwargs):
-    def __init__(self, depth=3, *args, **kwargs):
         super(MySpider, self).__init__(*args, **kwargs)
 
         # get args from command line
@@ -29,28 +26,21 @@ class MySpider(scrapy.Spider):
                 data = dict(json.load(f))
         except:
             raise ValueError(f"Could not find data/urls_depth_{self.depth}.json. Please run collect_wiki_urls.py with the same depth argument first")
-        try:
-            with open(f"data/urls_depth_{self.depth}.json", "r") as f:
-                data = dict(json.load(f))
-        except:
-            raise ValueError(f"Could not find data/urls_depth_{self.depth}.json. Please run collect_wiki_urls.py with the same depth argument first")
 
         # make folder: wiki_depth_{depth} and subfolders for each category
         if not os.path.exists(f"data/wiki_depth_{self.depth }"):
             os.mkdir(f"data/wiki_depth_{self.depth }")
-        if not os.path.exists(f"data/wiki_depth_{self.depth }"):
-            os.mkdir(f"data/wiki_depth_{self.depth }")
+
         for category in data.keys():
             if not os.path.exists(f"data/wiki_depth_{self.depth }/{category}"):
                 os.mkdir(f"data/wiki_depth_{self.depth }/{category}")
-            if not os.path.exists(f"data/wiki_depth_{self.depth }/{category}"):
-                os.mkdir(f"data/wiki_depth_{self.depth }/{category}")
+
         self.data = data
 
     def start_requests(self):
         for category, urls in self.data.items():
             for url in tqdm(urls, desc=f"Category: {category}"):
-                # don't filter to avoid duplicates in case of error (e.g. timeout)
+                # don't filter as we want to visit the same url multiple times (a url can be in multiple categories)
                 yield Request(url=url, callback=self.parse, meta={'category': category}, dont_filter=True, errback=self.errback_httpbin) 
 
     def errback_httpbin(self, failure):
@@ -70,7 +60,6 @@ class MySpider(scrapy.Spider):
             logger.info(f"Failed to get {response.url}")
             return
 
-
         url = response.url if response.url else None
         html = response.text if response.text else None
 
@@ -80,7 +69,7 @@ class MySpider(scrapy.Spider):
             title = response.css(".mw-page-title-main::text").get()
             save_title = title.replace('/', '_')
         except:
-            # try to get title from the first h1 (id = firstHeading)
+            # if first attempt failed, try to get title from the first h1 (id = firstHeading)
             try:
                 title = response.xpath('//h1//text()').get()
                 save_title = title.replace('/', '_')
@@ -92,7 +81,6 @@ class MySpider(scrapy.Spider):
             save_title = title.replace('/', '_')
             logger.info(f"Could not get title for url: {url}. Using {title} derived from url")
 
-        #%%
         # remove all tbody (table text), image captions and dd tags (references)
         text = None
         try:

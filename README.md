@@ -85,7 +85,7 @@ scrapy crawl wiki -a depth=1
 
 ## Upload data til s3
 
-Til sidst gemmes data i parquet for mat og uploades til S3 bucket. Sørg for at have opsat aws credentials. 
+Til sidst gemmes data i parquet format og uploades til S3 bucket (sørg for at have opsat aws credentials). 
 
 ```bash
 python push_to_cloud.py --depth 1 --bucket_name hanse-scrape-data --s3_folder wikipedia-categories
